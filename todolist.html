@@ -121,9 +121,11 @@
         }
 
         .task-input {
-            display: flex;
-            gap: 8px;
-            align-items: center;
+            position: sticky;  /* 입력창 고정 */
+            top: 0;           /* 상단에 고정 */
+            background: white;
+            padding: 15px 0;
+            z-index: 10;      /* 다른 요소들 위에 표시 */
             margin-bottom: 15px;
         }
 
@@ -519,6 +521,170 @@
                 font-size: 14px;
             }
         }
+
+        /* 작업 목록 영역 */
+        .tasks-container {
+            margin-top: 10px;  /* 입력창과의 간격 */
+            overflow-y: auto;  /* 스크롤 가능하도록 */
+        }
+
+        /* 모바일 최적화 스타일 */
+        @media screen and (max-width: 768px) {
+            /* 전체 레이아웃 */
+            .board {
+                flex-direction: column;
+                padding: 10px;
+                gap: 20px;
+            }
+
+            .column {
+                width: 100%;
+                min-width: unset;
+                margin: 0;
+            }
+
+            /* 제목 */
+            h1 {
+                font-size: 24px;
+                margin: 15px 0;
+            }
+
+            h2 {
+                font-size: 18px;
+                margin: 10px 0;
+            }
+
+            /* 입력 영역 */
+            .task-input {
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .task-input input[type="text"],
+            .task-input input[type="date"] {
+                width: 100%;
+                height: 36px;
+                font-size: 14px;
+            }
+
+            .task-input button {
+                width: 100%;
+                height: 36px;
+                font-size: 14px;
+            }
+
+            /* 작업 아이템 */
+            .task {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+
+            .task-content {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+
+            .task-date {
+                font-size: 12px;
+                display: block;
+                margin-top: 4px;
+            }
+
+            /* 작업 버튼 영역 */
+            .task-actions {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .task-actions button {
+                width: 100%;
+                height: 32px;
+                font-size: 12px;
+                padding: 0 8px;
+                white-space: nowrap;
+            }
+
+            /* 메모 영역 */
+            .memo-container {
+                margin-top: 8px;
+            }
+
+            .memo-input {
+                width: 100%;
+                min-height: 60px;
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .memo-actions {
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .memo-actions button {
+                height: 32px;
+                font-size: 12px;
+                padding: 0 12px;
+            }
+
+            .memo-text {
+                font-size: 13px;
+                padding: 8px;
+                margin-top: 8px;
+            }
+
+            /* 전체목록 버튼 */
+            .view-all-btn {
+                font-size: 14px;
+                height: 36px;
+                margin: 10px 0;
+            }
+
+            /* 모달 */
+            .modal-content {
+                width: 90%;
+                max-height: 80vh;
+                padding: 15px;
+            }
+
+            .modal-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .modal-header h2 {
+                text-align: center;
+            }
+
+            .modal-header button {
+                width: 100%;
+                height: 36px;
+                font-size: 14px;
+            }
+        }
+
+        /* 더 작은 화면에 대한 추가 최적화 */
+        @media screen and (max-width: 375px) {
+            .task-actions {
+                grid-template-columns: 1fr;  /* 버튼을 한 줄에 하나씩 */
+            }
+
+            .task-actions button {
+                height: 36px;
+                font-size: 13px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            h2 {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -536,7 +702,7 @@
                     <input type="date" id="todoDate" class="date-input">
                     <button onclick="addTask('todo')">추가</button>
                 </div>
-                <div id="todoTasks"></div>
+                <div id="todoTasks" class="tasks-container"></div>
             </div>
 
             <!-- 진행중인 일 -->
@@ -643,37 +809,51 @@
         function renderTasks() {
             // 해야할 일
             document.getElementById('todoTasks').innerHTML = tasks.todo
-                .map(task => createTaskHTML(task, 'todo', true))
+                .map(task => createTaskHTML(task, 'todo'))
                 .join('');
             
             // 진행중인 일
             document.getElementById('progressTasks').innerHTML = tasks.progress
-                .map(task => createTaskHTML(task, 'progress', true))
+                .map(task => createTaskHTML(task, 'progress'))
                 .join('');
             
             // 완료된 일
             document.getElementById('doneTasks').innerHTML = tasks.done
-                .map(task => createTaskHTML(task, 'done', false))
+                .map(task => createTaskHTML(task, 'done'))
                 .join('');
         }
 
         // 태스크 HTML 생성
-        function createTaskHTML(task, status, showMoveButton) {
-            const memoSection = `
-                <div class="memo-container" style="display: ${task.showMemo ? 'block' : 'none'}">
-                    <textarea class="memo-input" id="memo-${task.id}" 
-                        placeholder="메모를 입력하세요">${task.memo || ''}</textarea>
-                    <div class="memo-actions">
-                        <button class="memo-cancel-btn" onclick="cancelMemo(${task.id}, '${status}')">취소</button>
-                        <button class="memo-save-btn" onclick="saveMemo(${task.id}, '${status}')">저장</button>
-                    </div>
-                </div>
-                ${task.memo ? `
-                    <div class="memo-text">
-                        ${task.memo.replace(/\n/g, '<br>')}
-                    </div>
-                ` : ''}
-            `;
+        function createTaskHTML(task, status) {
+            let moveButtons = '';
+            
+            // 상태별 이동 버튼 설정
+            switch(status) {
+                case 'todo':
+                    moveButtons = `
+                        <button class="move-btn" onclick="moveTask(${task.id}, '${status}', 'progress')">
+                            진행중으로
+                        </button>
+                    `;
+                    break;
+                case 'progress':
+                    moveButtons = `
+                        <button class="move-btn move-prev" onclick="moveTask(${task.id}, '${status}', 'todo')">
+                            할일로
+                        </button>
+                        <button class="move-btn move-next" onclick="moveTask(${task.id}, '${status}', 'done')">
+                            완료로
+                        </button>
+                    `;
+                    break;
+                case 'done':
+                    moveButtons = `
+                        <button class="move-btn move-prev" onclick="moveTask(${task.id}, '${status}', 'progress')">
+                            진행중으로
+                        </button>
+                    `;
+                    break;
+            }
 
             return `
                 <div class="task">
@@ -687,13 +867,17 @@
                         </button>
                         <button class="edit-btn" onclick="editTask(${task.id}, '${status}')">수정</button>
                         <button class="delete-btn" onclick="deleteTask(${task.id}, '${status}')">삭제</button>
-                        ${showMoveButton ? `
-                            <button class="move-btn" onclick="moveTask(${task.id}, '${status}', '${status === 'todo' ? 'progress' : 'done'}')">
-                                ${status === 'todo' ? '진행중으로' : '완료로'}
-                            </button>
-                        ` : ''}
+                        ${moveButtons}
                     </div>
-                    ${memoSection}
+                    <div class="memo-container" style="display: ${task.showMemo ? 'block' : 'none'}">
+                        <textarea class="memo-input" id="memo-${task.id}" 
+                            placeholder="메모를 입력하세요">${task.memo || ''}</textarea>
+                        <div class="memo-actions">
+                            <button class="memo-cancel-btn" onclick="cancelMemo(${task.id}, '${status}')">취소</button>
+                            <button class="memo-save-btn" onclick="saveMemo(${task.id}, '${status}')">저장</button>
+                        </div>
+                    </div>
+                    ${task.memo ? `<div class="memo-text">${task.memo.replace(/\n/g, '<br>')}</div>` : ''}
                 </div>
             `;
         }
@@ -765,6 +949,36 @@
             task.showMemo = false;  // 메모 입력창 닫기
             renderTasks();
         }
+
+        // 이동 버튼 스타일 추가
+        const styles = document.createElement('style');
+        styles.innerHTML = `
+            .move-btn {
+                background-color: #2ecc71;
+            }
+            .move-btn.move-prev {
+                background-color: #e67e22;  /* 이전 단계 버튼 색상 */
+            }
+            .move-btn.move-next {
+                background-color: #2ecc71;  /* 다음 단계 버튼 색상 */
+            }
+
+            /* 모바일 대응 */
+            @media (max-width: 768px) {
+                .task-actions {
+                    flex-wrap: wrap;
+                    gap: 4px;
+                }
+                
+                .task-actions button {
+                    flex: 1;
+                    min-width: calc(50% - 4px);  /* 2열 배치 */
+                    font-size: 12px;
+                    padding: 6px 4px;
+                }
+            }
+        `;
+        document.head.appendChild(styles);
     </script>
 </body>
 </html>
