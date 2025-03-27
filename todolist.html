@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업무 리스트</title>
+    <link href="https://hangeul.pstatic.net/hangeul_static/css/nanum-round.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'NanumRound', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .board {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .column {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .column h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .task-input {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .task-input input {
+            height: 45px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 0 12px;
+            font-size: 16px;
+            background-color: #fff;
+        }
+
+        .task-input input[type="text"] {
+            flex: 3;
+        }
+
+        .task-input input[type="date"] {
+            flex: 1;
+            min-width: 140px;
+            padding: 0 8px;
+        }
+
+        .task-input button {
+            height: 45px;
+            padding: 0 20px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-input button {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .edit-btn { background-color: #27ae60; }
+        .move-btn { background-color: #2c3e50; }
+        .delete-btn { background-color: #e74c3c; }
+        .memo-btn { background-color: #9b59b6; }
+        .print-btn { background-color: #34495e; }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .task-input button:hover { background-color: #2980b9; }
+        .edit-btn:hover { background-color: #219a52; }
+        .move-btn:hover { background-color: #234567; }
+        .delete-btn:hover { background-color: #c0392b; }
+        .memo-btn:hover { background-color: #8e44ad; }
+        .print-btn:hover { background-color: #2c3e50; }
+
+        button:active {
+            transform: translateY(1px);
+            opacity: 0.95;
+        }
+
+        .task {
+            background: #ffffff;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-content {
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .task-date {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .memo-container {
+            margin-top: 12px;
+        }
+
+        .memo-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            font-size: 15px;
+            min-height: 60px;
+        }
+
+        .memo-text {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 8px;
+            border: 1px solid #3498db;
+            color: #2c3e50;
+            font-size: 15px;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .close {
+            color: #6c757d;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: #495057;
+        }
+
+        .task-list-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .task-category {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #3498db;
+        }
+
+        .task-category h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .task-list-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #adb5bd;
+            box-shadow: 0 2px 5px rgba(108, 117, 125, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .task-input {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .task-input input[type="text"],
+            .task-input input[type="date"],
+            .task-input button {
+                width: 100%;
+                height: 45px;
+            }
+
+            .task-actions {
+                justify-content: stretch;
+            }
+
+            .task-actions button {
+                flex: 1;
+                font-size: 14px;
+                padding: 10px 8px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 20px;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea, #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .task-category {
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            .task-list-item {
+                border: 1px solid #ddd;
+                margin-bottom: 10px;
+                page-break-inside: avoid;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        /* 색상 변수 정의 */
+        :root {
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #868e96;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+        }
+
+        /* 입력 필드 플레이스홀더 스타일 */
+        .task-input input::placeholder,
+        .memo-input::placeholder {
+            color: #adb5bd;
+        }
+
+        /* 전체 목록에서의 텍스트 스타일 */
+        .task-list-item .task-text {
+            color: #000000;  /* 선명한 블랙 */
+            font-weight: 500;
+        }
+
+        /* 버튼 순서 조정을 위한 스타일 */
+        .memo-btn { order: 1; }          /* 메모 버튼 첫번째 */
+        
+        /* 각 상태별 첫 버튼들 (진행중으로/완료로/할일로) */
+        .move-btn { order: 2; }          /* 이동 버튼 두번째 */
+        
+        /* 나머지 버튼들 */
+        .edit-btn { order: 3; }          /* 수정 버튼 세번째 */
+        .delete-btn { order: 4; }        /* 삭제 버튼 네번째 */
+
+        /* 전체목록보기 버튼 스타일 */
+        .list-view-btn,    /* 전체목록보기 버튼 */
+        .print-btn {       /* 목록출력 버튼 */
+            background-color: #2980b9;  /* 선명한 파란색 */
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 호버 효과 */
+        .list-view-btn:hover,
+        .print-btn:hover {
+            background-color: #2471a3;  /* 호버시 더 진한 파란색 */
+        }
+
+        /* 버튼 컨테이너 스타일 */
+        .button-container {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        /* 모달 내 버튼 간격 */
+        .modal-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>업무 리스트</h1>
+        <div class="board">
+            <!-- 해야할 일 -->
+            <div class="column" id="todo">
+                <h2>해야할 일</h2>
+                <div class="task-input">
+                    <input type="text" id="todoInput" placeholder="새로운 업무 추가">
+                    <input type="date" id="todoDate" class="date-input">
+                    <button onclick="addTask('todo')">추가</button>
+                </div>
+                <div id="todoTasks"></div>
+            </div>
+
+            <!-- 진행중인 일 -->
+            <div class="column" id="progress">
+                <h2>진행중인 일</h2>
+                <div id="progressTasks"></div>
+            </div>
+
+            <!-- 완료된 일 -->
+            <div class="column" id="done">
+                <h2>완료된 일</h2>
+                <div id="doneTasks"></div>
+            </div>
+        </div>
+
+        <!-- 목록 버튼 -->
+        <div class="button-container">
+            <button onclick="showTaskList()" class="list-view-btn">전체 목록 보기</button>
+        </div>
+
+        <!-- 모달 -->
+        <div id="taskListModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>전체 업무 목록</h2>
+                    <div class="modal-buttons">
+                        <button onclick="printTaskList()" class="print-btn">목록 출력</button>
+                        <span class="close" onclick="closeTaskList()">&times;</span>
+                    </div>
+                </div>
+                <div class="task-list-categories" id="printArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || {
+            todo: [],
+            progress: [],
+            done: []
+        };
+
+        renderTasks();
+
+        function addTask(status) {
+            const input = document.getElementById('todoInput');
+            const dateInput = document.getElementById('todoDate');
+            const text = input.value.trim();
+            const dueDate = dateInput.value;
+            
+            if (text) {
+                const task = {
+                    id: Date.now(),
+                    text: text,
+                    memo: '',
+                    showMemo: false,
+                    dueDate: dueDate
+                };
+                
+                tasks[status].push(task);
+                saveTasks();
+                renderTasks();
+                input.value = '';
+                dateInput.value = '';
+            }
+        }
+
+        function moveTask(id, fromStatus, toStatus) {
+            const taskIndex = tasks[fromStatus].findIndex(task => task.id === id);
+            const task = tasks[fromStatus][taskIndex];
+            
+            tasks[fromStatus].splice(taskIndex, 1);
+            tasks[toStatus].push(task);
+            
+            saveTasks();
+            renderTasks();
+        }
+
+        function editTask(id, status) {
+            const task = tasks[status].find(task => task.id === id);
+            const newText = prompt('업무 내용을 수정하세요:', task.text);
+            
+            if (newText && newText.trim()) {
+                task.text = newText.trim();
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id, status) {
+            const taskIndex = tasks[status].findIndex(task => task.id === id);
+            tasks[status].splice(taskIndex, 1);
+            
+            saveTasks();
+            renderTasks();
+        }
+
+        function toggleMemo(id, status) {
+            const task = tasks[status].find(task => task.id === id);
+            task.showMemo = !task.showMemo;
+            renderTasks();
+        }
+
+        function saveMemo(id, status) {
+            const task = tasks[status].find(task => task.id === id);
+            const memoInput = document.getElementById(`memo-${id}`);
+            task.memo = memoInput.value;
+            saveTasks();
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            document.getElementById('todoTasks').innerHTML = tasks.todo
+                .map(task => createTaskHTML(task, 'todo'))
+                .join('');
+            
+            document.getElementById('progressTasks').innerHTML = tasks.progress
+                .map(task => createTaskHTML(task, 'progress'))
+                .join('');
+            
+            document.getElementById('doneTasks').innerHTML = tasks.done
+                .map(task => createTaskHTML(task, 'done'))
+                .join('');
+        }
+
+        function createTaskHTML(task, status) {
+            let moveButtons = '';
+            
+            // 상태에 따른 이동 버튼 설정
+            switch(status) {
+                case 'todo':
+                    moveButtons = `
+                        <button class="move-btn-next" onclick="moveTask(${task.id}, '${status}', 'progress')">
+                            진행중으로
+                        </button>
+                    `;
+                    break;
+                case 'progress':
+                    moveButtons = `
+                        <button class="move-btn-prev" onclick="moveTask(${task.id}, '${status}', 'todo')">
+                            할일로
+                        </button>
+                        <button class="move-btn-next" onclick="moveTask(${task.id}, '${status}', 'done')">
+                            완료로
+                        </button>
+                    `;
+                    break;
+                case 'done':
+                    moveButtons = `
+                        <button class="move-btn-prev" onclick="moveTask(${task.id}, '${status}', 'progress')">
+                            진행중으로
+                        </button>
+                    `;
+                    break;
+            }
+
+            const memoSection = `
+                <div class="memo-container" style="display: ${task.showMemo ? 'block' : 'none'}">
+                    <textarea class="memo-input" id="memo-${task.id}" 
+                        placeholder="메모를 입력하세요">${task.memo}</textarea>
+                    <button onclick="saveMemo(${task.id}, '${status}')">메모 저장</button>
+                </div>
+                ${task.memo ? `<div class="memo-text">${task.memo}</div>` : ''}
+            `;
+
+            const dueDateDisplay = task.dueDate ? 
+                `<span class="task-date">기한: ${task.dueDate}</span>` : '';
+
+            return `
+                <div class="task">
+                    <div class="task-content">
+                        ${task.text}
+                        ${dueDateDisplay}
+                    </div>
+                    <div class="task-actions">
+                        ${moveButtons}
+                        <button class="edit-btn" onclick="editTask(${task.id}, '${status}')">수정</button>
+                        <button class="delete-btn" onclick="deleteTask(${task.id}, '${status}')">삭제</button>
+                        <button class="memo-btn" onclick="toggleMemo(${task.id}, '${status}')">
+                            ${task.showMemo ? '메모 닫기' : '메모'}
+                        </button>
+                    </div>
+                    ${memoSection}
+                </div>
+            `;
+        }
+
+        function showTaskList() {
+            const modal = document.getElementById('taskListModal');
+            const printArea = document.getElementById('printArea');
+            let allContent = '';
+            
+            // 각 카테고리별 내용 생성
+            ['todo', 'progress', 'done'].forEach((status, index) => {
+                const categoryTitles = {
+                    'todo': '해야할 일',
+                    'progress': '진행중인 일',
+                    'done': '완료된 일'
+                };
+
+                let tasksHTML = '';
+                tasks[status].forEach(task => {
+                    tasksHTML += `
+                        <div class="task-list-item">
+                            <div class="task-info">
+                                <div class="task-text">${task.text}</div>
+                                ${task.dueDate ? 
+                                    `<div class="task-date">기한: ${task.dueDate}</div>` : 
+                                    ''}
+                                ${task.memo ? 
+                                    `<div class="task-memo">메모: ${task.memo}</div>` : 
+                                    ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                allContent += `
+                    <div class="task-category">
+                        <h3>${categoryTitles[status]}</h3>
+                        <div class="category-content">
+                            ${tasksHTML || '<div class="no-tasks">등록된 업무가 없습니다.</div>'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            printArea.innerHTML = allContent;
+            modal.style.display = "block";
+        }
+
+        function closeTaskList() {
+            document.getElementById('taskListModal').style.display = "none";
+        }
+
+        function printTaskList() {
+            // 프린트 전 날짜 정보 추가
+            const printDate = document.createElement('div');
+            printDate.className = 'print-date';
+            printDate.style.textAlign = 'right';
+            printDate.style.marginBottom = '20px';
+            printDate.innerHTML = `출력일: ${new Date().toLocaleDateString()}`;
+            
+            const printArea = document.getElementById('printArea');
+            printArea.insertBefore(printDate, printArea.firstChild);
+
+            // 프린트 실행
+            window.print();
+
+            // 프린트 후 날짜 정보 제거
+            printArea.removeChild(printDate);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskListModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
