@@ -176,7 +176,7 @@
         .task-actions {
             display: flex;
             gap: 4px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             margin-top: 8px;
         }
 
@@ -425,17 +425,98 @@
         /* 모바일 대응 */
         @media (max-width: 768px) {
             button {
-                padding: 8px 12px;
-                font-size: 14px;
+                padding: 6px 8px;
+                font-size: 12px;
+                min-height: 30px;
             }
 
             .task-actions {
-                gap: 6px;
+                gap: 3px;
             }
 
             .task-actions button {
                 flex: 1;
-                min-width: calc(50% - 3px);
+                padding: 6px 4px;
+                white-space: nowrap;
+            }
+
+            .memo-btn { min-width: 40px; }
+            .edit-btn { min-width: 40px; }
+            .delete-btn { min-width: 40px; }
+            .move-btn { min-width: 65px; }
+
+            .memo-container button {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+        }
+
+        /* 더 작은 화면 대응 */
+        @media (max-width: 375px) {
+            button {
+                padding: 6px 6px;
+                font-size: 11px;
+            }
+
+            .task-actions {
+                gap: 2px;
+            }
+        }
+
+        /* 메모 관련 스타일 수정 */
+        .memo-container {
+            margin-top: 10px;
+            display: none;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .memo-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 60px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 8px;
+        }
+
+        .memo-text {
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .memo-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .memo-save-btn {
+            background-color: #27ae60;
+        }
+
+        .memo-cancel-btn {
+            background-color: #95a5a6;
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 768px) {
+            .memo-input {
+                font-size: 16px;  /* 모바일에서 입력이 더 쉽도록 */
+                padding: 10px;
+            }
+
+            .memo-actions button {
+                padding: 8px 12px;
+                font-size: 14px;
             }
         }
     </style>
@@ -578,6 +659,22 @@
 
         // 태스크 HTML 생성
         function createTaskHTML(task, status, showMoveButton) {
+            const memoSection = `
+                <div class="memo-container" style="display: ${task.showMemo ? 'block' : 'none'}">
+                    <textarea class="memo-input" id="memo-${task.id}" 
+                        placeholder="메모를 입력하세요">${task.memo || ''}</textarea>
+                    <div class="memo-actions">
+                        <button class="memo-cancel-btn" onclick="cancelMemo(${task.id}, '${status}')">취소</button>
+                        <button class="memo-save-btn" onclick="saveMemo(${task.id}, '${status}')">저장</button>
+                    </div>
+                </div>
+                ${task.memo ? `
+                    <div class="memo-text">
+                        ${task.memo.replace(/\n/g, '<br>')}
+                    </div>
+                ` : ''}
+            `;
+
             return `
                 <div class="task">
                     <div class="task-content">
@@ -596,12 +693,7 @@
                             </button>
                         ` : ''}
                     </div>
-                    <div class="memo-container" style="display: ${task.showMemo ? 'block' : 'none'}">
-                        <textarea class="memo-input" id="memo-${task.id}" 
-                            placeholder="메모를 입력하세요">${task.memo}</textarea>
-                        <button onclick="saveMemo(${task.id}, '${status}')">메모 저장</button>
-                    </div>
-                    ${task.memo ? `<div class="memo-text">${task.memo}</div>` : ''}
+                    ${memoSection}
                 </div>
             `;
         }
@@ -645,6 +737,33 @@
 
         function printTaskList() {
             window.print();
+        }
+
+        // 화면 크기 변경 시 리렌더링
+        window.addEventListener('resize', () => {
+            renderTasks();
+        });
+
+        // 메모 관련 함수들 수정
+        function toggleMemo(id, status) {
+            const task = tasks[status].find(task => task.id === id);
+            task.showMemo = !task.showMemo;
+            renderTasks();
+        }
+
+        function saveMemo(id, status) {
+            const task = tasks[status].find(task => task.id === id);
+            const memoInput = document.getElementById(`memo-${id}`);
+            task.memo = memoInput.value.trim();
+            task.showMemo = false;  // 저장 후 메모 입력창 닫기
+            saveTasks();
+            renderTasks();
+        }
+
+        function cancelMemo(id, status) {
+            const task = tasks[status].find(task => task.id === id);
+            task.showMemo = false;  // 메모 입력창 닫기
+            renderTasks();
         }
     </script>
 </body>
