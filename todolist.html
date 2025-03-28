@@ -606,7 +606,8 @@
             .task-actions {
                 display: flex;
                 flex-wrap: nowrap;  /* 한 줄로 강제 */
-                gap: 4px;          /* 버튼 간격 축소 */
+                gap: 2px;          /* 버튼 간격 축소 */
+                justify-content: space-between; /* 버튼 간격 균등 분배 */
             }
 
             .task-actions button {
@@ -614,7 +615,8 @@
                 font-size: 11px;   /* 글자 크기 축소 */
                 padding: 4px 2px;  /* 패딩 축소 */
                 height: 28px;      /* 높이 축소 */
-                min-width: auto;   /* 최소 너비 제거 */
+                min-width: 0;      /* 최소 너비 제거 */
+                width: auto;       /* 가로 크기 자동 */
                 white-space: nowrap;
             }
 
@@ -624,8 +626,9 @@
             }
 
             /* 메모 버튼 */
-            .memo-btn {
-                min-width: auto !important;
+            .memo-btn, .edit-btn, .delete-btn, .move-btn { 
+                width: auto;  /* 가로 크기 자동으로 변경 */
+                min-width: 0; /* 최소 너비 제거 */
             }
 
             /* 메모 영역 */
@@ -693,6 +696,7 @@
             .task-actions button {
                 font-size: 10px;   /* 더 작은 화면에서 글자 크기 추가 축소 */
                 padding: 4px 1px;  /* 패딩 추가 축소 */
+                height: 24px;      /* 높이 축소 */
             }
 
             h1 {
