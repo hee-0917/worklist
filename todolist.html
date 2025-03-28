@@ -178,8 +178,9 @@
         .task-actions {
             display: flex;
             gap: 4px;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;  /* 버튼 줄바꿈 허용 */
             margin-top: 8px;
+            justify-content: center;  /* 버튼 중앙 정렬 */
         }
 
         .edit-btn {
@@ -314,15 +315,19 @@
         /* 버튼 색상 */
         .memo-btn { 
             background-color: #9b59b6;  /* 보라색 */
+            width: 50%;  /* 가로 크기 50%로 설정 */
         }
         .edit-btn { 
             background-color: #3498db;  /* 파란색 */
+            width: 50%;  /* 가로 크기 50%로 설정 */
         }
         .delete-btn { 
             background-color: #e74c3c;  /* 빨간색 */
+            width: 50%;  /* 가로 크기 50%로 설정 */
         }
         .move-btn { 
             background-color: #2ecc71;  /* 초록색 */
+            width: 50%;  /* 가로 크기 50%로 설정 */
         }
 
         /* 버튼 순서 조정 */
