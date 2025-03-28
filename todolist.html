@@ -845,24 +845,24 @@
                 case 'todo':
                     moveButtons = `
                         <button class="move-btn" onclick="moveTask(${task.id}, '${status}', 'progress')">
-                            진행중으로
+                            진행중
                         </button>
                     `;
                     break;
                 case 'progress':
                     moveButtons = `
                         <button class="move-btn move-prev" onclick="moveTask(${task.id}, '${status}', 'todo')">
-                            할일로
+                            할일
                         </button>
                         <button class="move-btn move-next" onclick="moveTask(${task.id}, '${status}', 'done')">
-                            완료로
+                            완료
                         </button>
                     `;
                     break;
                 case 'done':
                     moveButtons = `
                         <button class="move-btn move-prev" onclick="moveTask(${task.id}, '${status}', 'progress')">
-                            진행중으로
+                            진행중
                         </button>
                     `;
                     break;
@@ -899,6 +899,8 @@
         function showTaskList() {
             const modal = document.getElementById('taskListModal');
             const content = document.getElementById('printArea');
+            const taskInput = document.querySelector('.task-input');
+            taskInput.style.display = 'none'; // 업무 추가 창 숨기기
             let listHTML = '';
 
             ['todo', 'progress', 'done'].forEach(status => {
@@ -930,6 +932,8 @@
 
         function closeTaskList() {
             document.getElementById('taskListModal').style.display = "none";
+            const taskInput = document.querySelector('.task-input');
+            taskInput.style.display = 'block'; // 업무 추가 창 다시 보이기
         }
 
         function printTaskList() {
